@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -13,10 +14,13 @@ app.use(cors({
 }));
 
 // Import Routes
-const taskRoutes = require('./routes/tasks');
+const taskRoutes = require('./routes/tasks');  // ← NEW
 
 // Database Connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/taskmanager')
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
 .then(() => {
   console.log('Connected to MongoDB');
   app.listen(PORT, () => {
@@ -28,9 +32,4 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/taskmanager
 });
 
 // Routes Middleware
-app.use('/api/tasks', taskRoutes);
-
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+app.use('/api/tasks', taskRoutes);  // ← NEW
