@@ -7,13 +7,11 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Middleware
 app.use(express.json());
 app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
-// ✅ ADD THIS - Root Route
 app.get('/', (req, res) => {
   res.json({ 
     message: 'Task Manager API is running! 🚀',
@@ -27,13 +25,10 @@ app.get('/', (req, res) => {
   });
 });
 
-// Import Routes
 const taskRoutes = require('./routes/tasks');
 
-// Routes Middleware
 app.use('/api/tasks', taskRoutes);
 
-// Database Connection (Remove deprecated options)
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');
