@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(cors({
+  origin: "https://task-manager-frontend-ruddy-beta.vercel.app",
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 }));
 
