@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(cors({
 
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'Task Manager API is running! 🚀',
+    message: 'Task Manager API is running!',
     endpoints: {
       getAllTasks: 'GET /api/tasks',
       createTask: 'POST /api/tasks',
@@ -27,8 +28,13 @@ app.get('/', (req, res) => {
 });
 
 const taskRoutes = require('./routes/tasks');
-
 app.use('/api/tasks', taskRoutes);
+
+setInterval(() => {
+  fetch("https://task-manager-backend-d3hb.onrender.com/api/tasks")
+    .then(() => console.log("Render Keep-Alive Ping Sent"))
+    .catch((err) => console.error("Ping Error:", err));
+}, 600000); // every 10 minutes
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
