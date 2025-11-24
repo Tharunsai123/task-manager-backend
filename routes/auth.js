@@ -9,6 +9,13 @@ router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+    console.log('Register attempt:', { username, email }); // Debug log
+
+    // Validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
     // Check if user exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
@@ -20,9 +27,11 @@ router.post('/register', async (req, res) => {
     await user.save();
 
     // Create token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    const token = jwt.sign(
+      { userId: user._id }, 
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
 
     res.status(201).json({
       token,
@@ -33,7 +42,8 @@ router.post('/register', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Register error:', error);
+    res.status(500).json({ message: error.message || 'Error registering user' });
   }
 });
 
@@ -41,6 +51,13 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    console.log('Login attempt:', { email }); // Debug log
+
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
 
     // Check if user exists
     const user = await User.findOne({ email });
@@ -55,9 +72,11 @@ router.post('/login', async (req, res) => {
     }
 
     // Create token
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    const token = jwt.sign(
+      { userId: user._id }, 
+      process.env.JWT_SECRET || 'fallback-secret-key',
+      { expiresIn: '7d' }
+    );
 
     res.json({
       token,
@@ -68,7 +87,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Login error:', error);
+    res.status(500).json({ message: error.message || 'Error logging in' });
   }
 });
 
@@ -82,6 +102,7 @@ router.get('/me', auth, async (req, res) => {
       profilePicture: req.user.profilePicture
     });
   } catch (error) {
+    console.error('Get user error:', error);
     res.status(500).json({ message: error.message });
   }
 });
@@ -99,31 +120,7 @@ router.put('/profile', auth, async (req, res) => {
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Add this route to your existing auth.js file
-
-// Change password
-router.put('/change-password', auth, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-
-    const user = await User.findById(req.userId);
-    
-    // Verify current password
-    const isMatch = await user.comparePassword(currentPassword);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
-    }
-
-    // Update password
-    user.password = newPassword;
-    await user.save();
-
-    res.json({ message: 'Password changed successfully' });
-  } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ message: error.message });
   }
 });
